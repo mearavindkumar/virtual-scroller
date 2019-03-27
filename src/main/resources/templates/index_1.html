@@ -1,0 +1,199 @@
+<html>
+
+    <head>
+    
+    	<script src="/Users/cb-aravind/eclipse-workspace/virtual_scrolling/src/main/resources/static/javascript/VirtualScroll.js"></script>
+    
+        <style>
+            .scroll {
+                background: #ccc;
+                width: 600px;
+                height: 500px;
+                border: 1px solid #999;
+                overflow: auto;
+                position: relative;
+            }
+
+            .table {
+                display: table;
+                table-layout: fixed;
+            }
+
+            .table>div {
+                display: table-row;
+                /* height: 32px; */
+            }
+
+            .table>div>div {
+                background-color: #fff;
+                border: 1px solid #ccc;
+                display: table-cell;
+                /* height: 26px; */
+                min-width: 100px;
+                padding: 0px 8px;
+                text-align: center;
+                white-space: nowrap;
+            }
+        </style>
+
+        <script>
+            var data = [];
+
+            var dataLength = 10000;
+
+            var rowHeight = 20;
+            var scrollHeight = 10000 * rowHeight;
+            var scrollEl = document.getElementById("scroll");
+            var rowEls = [];
+
+            function generateData() {
+                var row = []
+                /* row.push("Index")
+                 row.push("First Name")
+                 row.push("Last Name")
+                 row.push("Address")
+                 data.push(row) */
+                for (var counter = 0; counter < dataLength; counter++) {
+                    row = []
+                    row.push(counter);
+                    row.push("Apollo");
+                    row.push("Cabrera");
+                    row.push("123 Anystreet");
+                    data.push(row)
+                }
+            }
+            generateData();
+
+            var div = document.createElement("div");
+
+            function render() {
+
+                var tableEl = document.getElementById("container");
+                var initialRows = parseInt(document.getElementById("scroll").offsetHeight
+                        / rowHeight) + 20;
+                /* var scrollEl = div.cloneNode();
+                 scrollEl.style.height = scrollHeight + "px";
+                 scrollEl.style.position = "absolute";
+                 scrollEl.style.top = "0px";
+                 scrollEl.style.width = "1px";
+                 scrollEl.style.borderLeft = "1px solid red"; */
+                for (var i = 0; i < initialRows; i++) {
+                    var rowEl = div.cloneNode();
+                    rowEl.setAttribute("idx", i);
+                    var cols = data[i];
+                    for (var j = 0; j < cols.length; j++) {
+                        var cellEl = div.cloneNode();
+                        cellEl.innerHTML = cols[j];
+                        rowEl.appendChild(cellEl);
+                    }
+                    tableEl.appendChild(rowEl);
+                    rowEls.push(rowEl);
+                }
+                /* tableEl.parentNode.appendChild(scrollEl); */
+                document.getElementById("c").style.height = scrollHeight + "px";
+                document.getElementById("c").style.border = "1px solid green";
+                initScroll();
+            }
+
+            function render1(from) {
+                for (var i = 0; i < rowEls.length; i++) {
+                    var rowEl = rowEls[i];
+                    rowEl.innerHTML = "";
+                    rowEl.setAttribute("idx", from);
+                    var cols = data[from];
+                    for (var j = 0; j < cols.length; j++) {
+                        var cellEl = div.cloneNode();
+                        cellEl.innerHTML = cols[j];
+                        rowEl.appendChild(cellEl);
+                    }
+                    from++;
+                }
+            }
+
+            function initScroll() {
+                var scrollEl = document.getElementById("scroll");
+                scrollEl.addEventListener("scroll", scroll);
+            }
+
+            var lastRepaintY;
+
+            function scroll(event) {
+                var tableEl = document.getElementById("c");
+                var scrollTop = event.target.scrollTop;
+                var scrollHeight = event.target.scrollHeight;
+                var offsetHeight = event.target.offsetHeight;
+
+                var tableEl = document.getElementById("container");
+
+                if (lastRepaintY == null
+                        || Math.abs(scrollTop - lastRepaintY) >= (rowHeight + rowHeight / 2)) {
+                    var from = parseInt(scrollTop / rowHeight);
+                    if (scrollTop == 0) {
+                        from = 0
+                    }
+                    if (offsetHeight + scrollTop >= scrollHeight || from >= data.length || from > (data.length - rowEls.length)) {
+                        from = data.length - rowEls.length;
+                    }
+                    lastRepaintY = scrollTop;
+                    if (tableEl.offsetHeight + scrollTop <= scrollHeight) {
+                        tableEl.style.transform = "translateY(" + (scrollTop) + "px)";
+                        console.log(scrollTop);
+                    } else {
+                        tableEl.style.transform = "translateY(" + (scrollHeight - tableEl.offsetHeight) + "px)";
+                    }
+                    (from >= 0) && render1(from);
+                }
+
+            }
+
+
+
+
+
+
+            function scroll1(event) {
+                var tableEl = document.getElementById("c");
+                var scrollTop = event.target.scrollTop;
+                var scrollHeight = event.target.scrollHeight;
+                var offsetHeight = event.target.offsetHeight;
+
+                var tableEl = document.getElementById("container");
+
+                if (lastRepaintY == null
+                        || Math.abs(scrollTop - lastRepaintY) >= (rowHeight + rowHeight / 2)) {
+                    var from = parseInt(scrollTop / rowHeight);
+                    if (scrollTop == 0) {
+                        from = 0
+                        console.log("setting from to 0")
+                    }
+                    if (offsetHeight + scrollTop >= scrollHeight || from >= data.length) {
+                        from = data.length - rowEls.length - 1;
+                    }
+                    console.log("setting from " + from)
+                    lastRepaintY = scrollTop;
+                    tableEl.style.transform = "translateY(" + (scrollTop) + "px)";
+                    (from >= 0) && render1(from);
+                }
+
+            }
+        </script>
+
+    </head>
+
+    <body onload="">
+        <h1>Virtual Scrolling</h1>
+        <h2>
+            <input type="button" value="Render" onclick="render()" />
+        </h2>
+
+
+
+        <div class="scroll" id="scroll">
+            <div class="parent" id="c">
+                <div id="container" class="table"></div>
+            </div>
+        </div>
+    </body>
+
+
+</html>
