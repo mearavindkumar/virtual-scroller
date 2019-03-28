@@ -27,38 +27,60 @@
     /*Need Cleanup*/
 
     function scroll(event, config) {
+    	console.log(event);
         var parEl = config.containerParentEl;
         var containerEl = config.containerEl;
-        var scrollTop = event.target.scrollTop;
-        var scrollHeight = event.target.scrollHeight;
-        var offsetHeight = event.target.offsetHeight;
+        var scrollTop = config.scrollEl.scrollTop;
+        var scrollHeight = config.scrollEl.scrollHeight;
+        var offsetHeight = config.scrollEl.offsetHeight;
 
         var height = config.height;
         var from = 0;
         var data = config.data;
         var els = config.els;
 
-        if (config.lastRepaintY == null || Math.abs(scrollTop - config.lastRepaintY) >= (height + height / 2)) {
+        var minTop = height;
+        
+
+        
+
+        if (config.lastRepaintY == null || Math.abs(scrollTop - config.lastRepaintY) >= minTop) {
             var from = parseInt(scrollTop / height);
-            if (scrollTop === 0) {
-                from = 0;
-            }
-            if (offsetHeight + scrollTop >= scrollHeight || from >= data.length || from > (data.length - els.length)) {
+            if (from > (data.length - els.length)) {
                 from = data.length - els.length;
             }
             config.lastRepaintY = scrollTop;
             if (containerEl.offsetHeight + scrollTop <= scrollHeight) {
                 containerEl.style.transform = "translateY(" + (scrollTop) + "px)";
+                containerEl.setAttribute("vs-scrollTop", scrollTop);
             } else {
                 containerEl.style.transform = "translateY(" + (scrollHeight - containerEl.offsetHeight) + "px)";
+                containerEl.setAttribute("vs-scrollTop", scrollHeight - containerEl.offsetHeight);
             }
             (from >= 0) && renderEls(config, from);
         }
 
     }
+    
+
 
     /*Need Cleanup*/
 
+    
+    function debounce(func, wait, immediate) {
+    	var timeout;
+    	return function() {
+    		var context = this, args = arguments;
+    		var later = function() {
+    			timeout = null;
+    			if (!immediate) func.apply(context, args);
+    		};
+    		var callNow = immediate && !timeout;
+    		clearTimeout(timeout);
+    		timeout = setTimeout(later, wait);
+    		if (callNow) func.apply(context, args);
+    	};
+    };
 
 
     function renderEls(config, from) {
@@ -87,9 +109,13 @@
         var config;
 
         var event = function () {
+        	var eff = debounce(scroll, 1000);
             config.scrollEl.addEventListener("scroll", function (event) {
-                scroll(event, config);
+            	scroll(event, config);
             });
+//            config.scrollEl.addEventListener("mousewheel", function (event) {
+//            	eff(event, config);
+//            });
         };
 
         var init = function () {
@@ -121,3 +147,38 @@
 
 
 }));
+
+
+/*
+ function scroll(event, config) {
+ var parEl = config.containerParentEl;
+ var containerEl = config.containerEl;
+ var scrollTop = event.target.scrollTop;
+ var scrollHeight = event.target.scrollHeight;
+ var offsetHeight = event.target.offsetHeight;
+ 
+ var height = config.height;
+ var from = 0;
+ var data = config.data;
+ var els = config.els;
+ 
+ if (config.lastRepaintY == null || Math.abs(scrollTop - config.lastRepaintY) >= (height + height / 2)) {
+ var from = parseInt(scrollTop / height);
+ if (scrollTop === 0) {
+ from = 0;
+ }
+ if (offsetHeight + scrollTop >= scrollHeight || from >= data.length || from > (data.length - els.length)) {
+ from = data.length - els.length;
+ }
+ config.lastRepaintY = scrollTop;
+ if (containerEl.offsetHeight + scrollTop <= scrollHeight) {
+ containerEl.style.transform = "translateY(" + (scrollTop) + "px)";
+ } else {
+ containerEl.style.transform = "translateY(" + (scrollHeight - containerEl.offsetHeight) + "px)";
+ }
+ (from >= 0) && renderEls(config, from);
+ }
+ 
+ }
+ 
+ */
